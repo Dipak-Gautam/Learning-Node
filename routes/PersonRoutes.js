@@ -1,7 +1,6 @@
 const express = require("express");
 const router = express.Router();
 const Person = require("./../models/person");
-const { findByIdAndUpdate } = require("../models/MenuItem");
 
 router.post("/", async (req, res) => {
   try {
