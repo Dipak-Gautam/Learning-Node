@@ -1,16 +1,36 @@
 const express = require("express");
+require("dotenv").config();
 const router = express.Router();
 const Person = require("./../models/person");
+const { jwtAuthMiddleWare, generateJWtToken } = require("./../Jwt");
 
-router.post("/", async (req, res) => {
+const jwtSecret = process.env.JWT_SECRET;
+if (!jwtSecret) {
+  throw new Error("JWT_SECRET environment variable is required");
+}
+
+router.post("/signup", async (req, res) => {
   try {
     const data = req.body; // Ashuming request boday contains the person data
     //Create a new person document using the mongoose model
     const newPerson = new Person(data);
     // Save the new person to the database
     const response = await newPerson.save();
-    console.log("Data saved successfully");
-    res.status(200).json({ success: "Data saved sucessfully", response });
+
+    const payload = {
+      id: response.id,
+      userName: response.userName,
+      email: response.email,
+    };
+
+    const token = generateJWtToken(payload, process.env.JWT_SECRET);
+    console.log("token :", token);
+
+    res.status(200).json({
+      success: "Data saved sucessfully",
+      response: response,
+      token: token,
+    });
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: "Internal server error" });
